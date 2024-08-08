@@ -1,3 +1,5 @@
-pub async fn run() -> std::io::Result<()> {
+use common::Result;
+
+pub async fn run() -> Result<()> {
     unimplemented!();
 }

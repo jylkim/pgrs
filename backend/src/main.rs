@@ -1,11 +1,12 @@
 use common::telemetry;
+use common::Result;
 use backend::worker;
 use backend::master;
 
 use tracing::info;
 
 #[tokio::main]
-async fn main() -> std::io::Result<()> {
+async fn main() -> Result<()> {
     // print help
     // TODO: use clap crate
     if let Some(arg) = std::env::args().nth(1) {
@@ -20,8 +21,6 @@ async fn main() -> std::io::Result<()> {
     // initialize
     telemetry::init_tracing();
     info!("pg.rs server starting...");
-    initialize_locale()?;
-    info!("ready to run...");
     //startup
     if let Some(arg) = std::env::args().nth(1) {
         if arg == "-sa" || arg == "--standalone" {
@@ -45,9 +44,4 @@ fn help() {
 
 fn version() {
     println!("pg.rs server version: {}", env!("CARGO_PKG_VERSION"));
-}
-
-fn initialize_locale() -> std::io::Result<()> {
-    info!("locale initializing...");
-    Ok(())
 }

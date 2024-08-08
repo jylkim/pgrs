@@ -1,7 +1,7 @@
-use crate::worker::pg;
+use common::Result;
 use tracing::info;
 
-pub async fn run() -> std::io::Result<()> {
+pub async fn run() -> Result<()> {
     info!("pg.rs worker(process) starting...");
-    pg::run().await
+    unimplemented!();
 }

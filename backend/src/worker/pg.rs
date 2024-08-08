@@ -1,30 +1,16 @@
-use tokio::io::AsyncReadExt;
-use tracing::info;
+use crate::pq::Connection;
+use crate::config::Config;
+use common::{Result, DEFAULT_HOST, DEFAULT_PORT};
+use common::pq::{RequestMessage, ResponseCode, ResponseMessage};
 
-struct Config {
-    ip: String,
-    port: String,
-}
+use tracing::info;
 
 struct Listener {
     listener: tokio::net::TcpListener,
 }
 
 struct Handler {
-    socket: tokio::net::TcpStream,
-}
-
-impl Config {
-    fn new(ip: String, port: String) -> Self {
-        Self {
-            ip,
-            port,
-        }
-    }
-
-    fn get_addr(&self) -> String {
-        format!("{}:{}", self.ip, self.port)
-    }
+    connection: Connection,
 }
 
 impl Listener {
@@ -34,14 +20,14 @@ impl Listener {
         }
     }
 
-    async fn run(&self) -> std::io::Result<()> {
+    async fn run(&self) -> Result<()> {
         loop {
-            info!("waiting for connection...");
+            info!("server waiting for connection...");
             let (socket, _) = self.listener.accept().await?;
-            let mut handler = Handler::new(socket);
-            tokio::spawn(async move {
-                handler.run().await.unwrap();
-            });
+            info!("server connection accepted...");
+            Handler::new(socket)
+                .run()
+                .await?;
         }
     }
 }
@@ -49,25 +35,38 @@ impl Listener {
 impl Handler {
     fn new(socket: tokio::net::TcpStream) -> Self {
         Self {
-            socket,
+            connection: Connection::new(socket),
         }
     }
 
-    async fn run(&mut self) -> std::io::Result<()> {
-        let mut buf = [0; 1024];
-        let _ = self.socket.read(&mut buf).await?;
+    async fn run(&mut self) -> Result<()> {
+        info!("server start receiving...");
+        let req_msg: RequestMessage = self.connection.recieve().await?;
+        info!("server received message: {:?}", req_msg);
+        let res_msg = self.handle(req_msg);
+        info!("server response message: {:?}", res_msg);
+        self.connection.response(&res_msg).await?;
+        info!("server response sent...");
         Ok(())
+    }
+
+    fn handle(&self, request: RequestMessage) -> ResponseMessage {
+        ResponseMessage {
+            code: ResponseCode::Complete,
+            payload: request.payload.clone(),
+        }
     }
 }
 
 // core backend for pgrs.
 // invoked by two modules, standalone & backend (foked via master).
-pub async fn run() -> std::io::Result<()> {
+pub async fn run() -> Result<()> {
     // TODO: use config file to get the address
-    let config = Config::new("127.0.0.1".into(), "5432".into());
-    let addr = config.get_addr();
+    let config = Config::new(DEFAULT_HOST.into(), DEFAULT_PORT);
+    let addr = config.address();
     info!("starting to listen on {}", addr);
     let listener = tokio::net::TcpListener::bind(addr).await?;
     let listener = Listener::new(listener);
     listener.run().await
 }
+
