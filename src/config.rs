@@ -4,7 +4,7 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn new(host: String, port: u16) -> Self {
+    fn new(host: String, port: u16) -> Self {
         Self {
             host,
             port,
@@ -14,4 +14,8 @@ impl Config {
     pub fn address(&self) -> String {
         format!("{}:{}", self.host, self.port)
     }
+}
+
+pub fn get_config() -> Config {
+    Config::new(common::DEFAULT_HOST.into(), common::DEFAULT_PORT)
 }

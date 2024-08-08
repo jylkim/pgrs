@@ -1,6 +1,6 @@
 use crate::pq::Connection;
 use crate::config::Config;
-use common::{Result, DEFAULT_HOST, DEFAULT_PORT};
+use common::Result;
 use common::pq::{RequestMessage, ResponseCode, ResponseMessage};
 
 use tracing::info;
@@ -60,9 +60,8 @@ impl Handler {
 
 // core backend for pgrs.
 // invoked by two modules, standalone & backend (foked via master).
-pub async fn run() -> Result<()> {
+pub async fn run(config: Config) -> Result<()> {
     // TODO: use config file to get the address
-    let config = Config::new(DEFAULT_HOST.into(), DEFAULT_PORT);
     let addr = config.address();
     info!("starting to listen on {}", addr);
     let listener = tokio::net::TcpListener::bind(addr).await?;

@@ -1,7 +1,8 @@
 use common::telemetry;
 use common::Result;
-use backend::worker;
-use backend::master;
+use pgrs::tcop;
+use pgrs::master;
+use pgrs::config::get_config;
 
 use tracing::info;
 
@@ -21,13 +22,14 @@ async fn main() -> Result<()> {
     // initialize
     telemetry::init_tracing();
     info!("pg.rs server starting...");
+    let config = get_config();
     //startup
     if let Some(arg) = std::env::args().nth(1) {
         if arg == "-sa" || arg == "--standalone" {
-            worker::standalone_run().await?;
+            tcop::standalone_run(config).await?;
         }
     } else {
-        master::run().await?;
+        master::run(config).await?;
     }
     info!("pg.rs server stopped. finalizing...");
     Ok(())

@@ -1,7 +1,16 @@
+[package]
+name = "pgrs"
+version = "0.1.0"
+edition = "2021"
+
 [workspace]
 members = [
-  "backend",
   "cli",
   "common",
 ]
 resolver = "2"
+
+[dependencies]
+common = { path = "common" }
+tokio = { version ="1", features = ["full"] }
+tracing = "0.1"
