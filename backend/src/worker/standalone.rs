@@ -13,12 +13,12 @@ pub async fn run() -> Result<()> {
     pg::run().await
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
     use crate::config::Config;
-    use common::pq::{send, recv, RequestMessage, RequestCode, ResponseMessage, ResponseCode};
+    use common::pq::{send, recv, RequestMessage, RequestCode, ResponseCode};
     use tokio::net::TcpStream;
-    use tokio::time::{sleep, Duration};
 
 
     #[tokio::test]
