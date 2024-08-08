@@ -5,7 +5,7 @@ edition = "2021"
 
 [workspace]
 members = [
-  "cli",
+  "client",
   "common",
 ]
 resolver = "2"
